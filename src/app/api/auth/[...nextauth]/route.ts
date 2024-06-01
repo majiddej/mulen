@@ -17,13 +17,13 @@ const authOptions: AuthOptions = {
             // You can pass any HTML attribute to the <input> tag through the object.
             credentials: {
               username: { label: "username", type: "text" },
-              password: { label: "Password", type: "password" },
-              captcha_key: { label: "CaptchaKey", type: "text" },
-              captcha_value: { label: "CaptchaValue", type: "text" },
+              password: { label: "password", type: "password" },
             },
             async authorize(credentials, req) {
+              console.log("auth")
               return await getToken(credentials)
                 .then((response) => {
+                  console.log(response, '===========')
                   return { ...response?.data, loginType: "login" };
                 })
                 .catch((err) => {

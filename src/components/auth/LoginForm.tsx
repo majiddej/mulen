@@ -1,6 +1,6 @@
 "use client";
 
-import { Formik, FormikProps } from "formik";
+import { Form, Formik, FormikProps } from "formik";
 import Link from "next/link";
 import * as Yup from "yup";
 import CustomSelect from "../global/CustomSelect";
@@ -10,33 +10,29 @@ import CustomLabel from "../global/CustomLabel";
 import { fieldRequired } from "../global/validationMsgs";
 import { isRequiredField } from "../global/utils";
 import { signIn } from "next-auth/react";
+// import { useRouter } from "next/router";
 
 export default function LoginForm() {
-    const SignupSchema = Yup.object().shape({
-        certificate: Yup.string().required(fieldRequired),
-        pin: Yup.string().required(fieldRequired),
-        password: Yup.string().required(fieldRequired),
-        email: Yup.string()
-            .email("Invalid email")
-            .required("Email is required"),
 
-        filan: Yup.object().shape({
-            password: Yup.string().required(fieldRequired),
-        }),
+
+    // const router = useRouter()
+    const SignupSchema = Yup.object().shape({
+        username: Yup.string().required(fieldRequired),
+        password: Yup.string().required(fieldRequired),
     });
 
     const handleSubmit = async (formikProps: FormikProps<any>) => {
         console.log(formikProps)
         const res = await signIn("login", {
           redirect: false,
-          national_code: formikProps.values.national_code,
+          username: formikProps.values.username,
           password: formikProps.values.password,
-          captcha_value: formikProps.values.captcha_value,
           callbackUrl: "/",
         })
           .then((res) => {
-            // @ts-ignore
-            router.push(res.url);
+            if (res && res.url) {
+                // router.push(res.url);
+            }
           })
           .catch((err) => {
               console.log(err)
@@ -53,19 +49,31 @@ export default function LoginForm() {
     return (
         <Formik
             validationSchema={SignupSchema}
-            initialValues={{ certificate: "", pin: "", password: "" }}
-            onSubmit={(values) => {
-                console.log("values", values);
-            }}
-        >
+            initialValues={{ username: "", password: "" }}
+            onSubmit={async (values) => {
+                console.log(values)
+                await signIn("login", {
+                    redirect: false,
+                    username: values.username,
+                    password: values.password,
+                    callbackUrl: "/",
+                  })
+                    .then((res) => {
+                        console.log(res)
+                      // @ts-ignore
+                      router.push(res.url);
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                    });
+            }}        >
             {(formikProps) => (
-                <form
-                    onSubmit={() => handleSubmit(formikProps)}
+                <Form
                     className='w-full flex flex-col gap-y-5'
                 >
 
                     <CustomInput
-                        name='pin'
+                        name='username'
                         type='text'
                         placeholder='وارد کنید'
                         label={
@@ -117,7 +125,7 @@ export default function LoginForm() {
                             <span>فراموشی رمز عبور</span>
                         </Link>
                     </div>
-                </form>
+                </Form>
             )}
         </Formik>
     );
